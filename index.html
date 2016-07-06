@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+	<link rel="stylesheet" type="text/css" href="main.css">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+
+</head>
+<body>
+	<div class= "container">
+		<div class ="row">
+			<div class="col-md-12" >
+		<nav class="navbar navbar-inverse" role="navigation">
+			 <div class="navbar-header">
+				 <a class="navbar-brand" href="#">Wikipedia Api</a>
+				 </div>
+				 <div>
+				 <form class="navbar-form navbar-left" role="search">
+				 <div class="form-group">
+				 	<div class="input-group">
+				 		<input id="search-text" type="text" class="form-control" placeholder="Search">
+				 		<span class="input-group-btn">
+				 			<button id="btn-search" type="button" class="btn btn-default"><i class="fa fa-search"></i></button>
+				 		</span>
+				 	</div>
+				 </div>
+				 
+				 </form>
+				 <a href="http://en.wikipedia.org/wiki/Special:Random" target="_blank" class="btn btn-default navbar-btn" role="button">
+			 	 Surprise Me!
+			 	 </a>
+
+			 </div>
+		</nav>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-md-8 col-md-offset-2" id="search-area">
+				<div class="loading-area">
+					<i class="fa fa-circle-o-notch fa-spin loading-icon"></i>
+				</div>
+			</div>
+		</div>
+
+	</div>
+	<script   src="https://code.jquery.com/jquery-1.12.4.min.js"   integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ="   crossorigin="anonymous"></script>
+	<script type="text/javascript">
+
+	function wikipedia(){
+		var self = this;
+		this.searchResults = {};
+
+		this.loadSearchApi = function(searchText){
+			//use callback to avoid error
+			$.getJSON('https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=' + searchText + '&prop=extracts&exintro&explaintext&exsentences=2&exlimit=max&format=json&callback=?',function(val)  {
+				if(val.hasOwnProperty('continue')){
+					var test = val['query']['pages'];
+					var results = Object.keys(test);
+					this.searchResults = {};
+					for ( var i = 0; i < results.length; i++){
+						self.searchResults[i] = {};
+						self.searchResults[i]['title'] = val.query.pages[ results[i] ]['title'];
+						self.searchResults[i]['extract'] = val.query.pages[ results[i] ]['extract'];
+						self.searchResults[i]['url'] = 'https://en.wikipedia.org/?curid=' + val.query.pages[ results[i] ]['pageid'];
+
+					}
+					self.loadResults();					
+				}
+				else{
+					var noResultText = 
+					'<p>The page <b>' + $('#search-text').val() +' </b> - does not exists. </p>';
+					$('#search-area').html(noResultText);
+				}
+				
+			});
+		}
+
+		this.loadResults = function(){
+			var each_results = '';
+
+			for( var i = 0; i < Object.keys(self.searchResults).length; i++){
+				each_results += 
+				'<a href="' + self.searchResults[i]['url'] + '" class="list-group-item" target="_blank">' +
+					'<h4 class="list-group-item-heading">' +
+						self.searchResults[i]['title'] +
+					'</h4>' +
+					'<p class="list-group-item-text">' +
+						self.searchResults[i]['extract'] +
+					'</p>' +
+				'</a>';
+			}
+			each_results += "</div>";
+			var html_results = 
+			'<div class="panel panel-default">' +
+				'<div class="panel-heading">' +
+					'<h3 class="panel-title">' +
+						'Results' +
+					'</h3>' +
+				'</div>' +
+				'<div class="panel-body">'+
+					each_results +
+				'</div>' +
+			'</div>' +
+			'<div class="list-group">';
+			
+			$('#search-area').html(html_results);
+		}
+	}
+
+	this.search = function(){
+		$('#search-area').html('<div class="loading-area"><i class="fa fa-circle-o-notch fa-spin loading-icon"></i></div>');
+		var wikipediaApi = new wikipedia();
+		wikipediaApi.loadSearchApi( $('#search-text').val() );
+	}
+
+	$('#btn-search').click(function(){
+		search();	
+	});
+	
+	$('#search-text').keypress(function (e) {
+	var key = e.which;
+	if(key == 13)  // the enter key code
+	 {
+	   search();
+	   return false;  
+	 }
+	});
+
+	$(document).ready(function(){
+		$('#search-area').html('');
+		
+	});
+	</script>
+</body>
+</html>
