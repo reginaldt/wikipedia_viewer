@@ -10,4 +10,4 @@ A simple application that can search wikipedia entries powered by [MediaWiki.org
 
 # License
 
-MIT License. [Click here for more information.](LICENSE.md)
+MIT License. [Click here for more information.](LICENSE)
